@@ -255,6 +255,8 @@ add_action('wp_enqueue_scripts', 'load_js');
 <header>
 <header/>
 ```
+
+- Add .page-wrapper to front-page, page and template-contactus
 ### front-page.php
 ```php
 <?php get_header();?>
@@ -262,6 +264,42 @@ add_action('wp_enqueue_scripts', 'load_js');
   <div class="container">
     <h1><?php the_title();?></h1>
     <?php get_template_part('includes/section', 'content');?>
+  </div>
+</section>
+<?php get_footer();?>
+```
+### page.php
+```php
+<?php get_header();?>
+<section class="page-wrapper">
+  <div class="container">
+    <h1><?php the_title();?></h1>
+    <?php get_template_part('includes/section', 'content');?>
+  </div>
+</section>
+<?php get_footer();?>
+```
+
+### template-contactus.php
+```php
+<?php
+/*
+Template Name: Contact Us
+*/
+?>
+
+<?php get_header();?>
+<section class="page-wrapper">
+  <div class="container">
+    <h1><?php the_title();?></h1>
+    <div class="row">
+      <div class="col-lg-6">
+        This is where the contact form goes
+      </div>
+      <div class="col-lg-6">
+        <?php get_template_part('includes/section', 'content');?>
+      </div>
+    </div>  
   </div>
 </section>
 <?php get_footer();?>
@@ -303,10 +341,7 @@ add_theme_support('menus');
 
 - Create a menu (e.g.: `Top bar`) @ Appearance > Menus
 - Add pages to menu
-
-## Theme locations
-
-- Create a menu locations
+- Create a menu @ functions.php
 
 ### functions.php
 ```php
@@ -411,40 +446,61 @@ register_nav_menus(
   }
 ```
 
-- Add .page-wrapper to page and template-contactus
-### page.php
+### footer.php
 ```php
-<?php get_header();?>
-<section class="page-wrapper">
+
+<header>
   <div class="container">
-    <h1><?php the_title();?></h1>
-    <?php get_template_part('includes/section', 'content');?>
+    <?php 
+      wp_nav_menu(
+        array(
+          'theme_location' => 'footer-menu',
+          'menu_class' => 'footer-bar'
+        )
+      );
+    ?>
   </div>
-</section>
-<?php get_footer();?>
+<header/>
+
+<?php wp_footer();?>
+</body>
+</html>
 ```
 
-### template-contactus.php
+### functions.php
 ```php
 <?php
-/*
-Template Name: Contact Us
-*/
-?>
 
-<?php get_header();?>
-<section class="page-wrapper">
-  <div class="container">
-    <h1><?php the_title();?></h1>
-    <div class="row">
-      <div class="col-lg-6">
-        This is where the contact form goes
-      </div>
-      <div class="col-lg-6">
-        <?php get_template_part('includes/section', 'content');?>
-      </div>
-    </div>  
-  </div>
-</section>
-<?php get_footer();?>
+// Load stylesheets
+function load_css() {
+  wp_register_style('bootstrap', get_template_directory_uri() . '/css/bootstrap.min.css', array(), false, 'all');
+  wp_enqueue_style('bootstrap');
+
+  wp_register_style('main', get_template_directory_uri() . '/css/main.css', array(), false, 'all');
+  wp_enqueue_style('main');
+}
+
+add_action('wp_enqueue_scripts', 'load_css');
+
+// Load javascript
+function load_js() {
+  wp_enqueue_script('jquery');
+  wp_register_script('bootstrap', get_template_directory_uri() . '/js/bootstrap.min.js', 'jquery', false, true);
+  wp_enqueue_script('bootstrap');
+}
+
+add_action('wp_enqueue_scripts', 'load_js');
+
+// Theme Options
+add_theme_support('menus');
+
+// Menus
+register_nav_menus(
+  array(
+    'top-menu' => 'Top Menu Location',
+    'mobile-menu' => 'Mobile Menu Location',
+    'footer-menu' => 'Footer Menu Location',
+  )
+);
 ```
+
