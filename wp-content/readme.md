@@ -504,3 +504,258 @@ register_nav_menus(
 );
 ```
 
+# Blogging functionality
+
+- Create a few posts and add it to  "Blog" category @ Posts
+
+- create includes/serction-archive.php
+
+### includes/section-archive.php
+```php
+<div class="card mb-3">
+  <div class="card-body">
+    <?php if(have_posts()): while(have_posts()):the_post();?>
+      <h3><?php the_title();?></h3>
+      <?php the_excerpt();?>
+      <a href="<?php the_permalink();?>" class="btn btn-success">Read more</a>
+    <?php endwhile; else; endif;?>
+  </div>
+</div>
+```
+
+### archive.php
+```php
+<?php get_header();?>
+<section class="page-wrapper">
+  <div class="container">    
+    <?php get_template_part('includes/section', 'archive');?>
+
+    <?php previous_posts_link();?>
+    <?php next_posts_link();?>
+
+
+  </div>
+</section>
+<?php get_footer();?>
+```
+- Change "Blog pages shows at most" to a custom value (e.g.: 3) @ Settings > Reading
+
+
+## Custom category templates
+
+- create `category-blog.php`
+
+### category-blog.php
+```php
+<?php get_header();?>
+<section class="page-wrapper">
+  <div class="container">    
+    Custom Category 
+    <?php get_template_part('includes/section', 'archive');?>
+
+    <?php previous_posts_link();?>
+    <?php next_posts_link();?>
+
+
+  </div>
+</section>
+<?php get_footer();?>
+```
+
+## Single post
+### single.php
+```php
+<?php get_header();?>
+<section class="page-wrap">
+  <div class="container">
+    <h1><?php the_title();?></h1>
+    <?php get_template_part('includes/section', 'blogcontent');?>
+  </div>
+</section>
+<?php get_footer();?>
+```
+
+### includes/section-blogcontent.php
+- for more date formats look at php manual dates
+```php
+  <?php if(have_posts()): while(have_posts()):the_post();?>
+    <p><?php echo get_the_date('l jS F, Y'); ?></p>
+    // <p><?php echo get_the_date('d/m/Y h:i:s'); ?></p>
+    <?php the_content();?>
+    
+    // <?php the_author();?>
+    
+    // <?php 
+    //   $fname = get_the_author_meta('first_name');
+    //   $lname = get_the_author_meta('last_name');
+    //   echo $fname . ' ' . $lname;
+    // ?>
+
+    <p>Post by <?php echo $fname> <?php echo $lname; ?></p>
+
+    <?php 
+    $tags = get_the_tags();
+    foreach($tags as $tag):?>
+      <a href="<?php echo get_tag_link($tag->term-id);?>" class="badge-success">
+        <?php echo $tag->name;?>
+      </a>
+    <?php endforeach;?>
+
+
+    <?php 
+    $categories  = get_the_category();
+    foreach($categories as $cat):?>
+      <a href="<?php echo get_category_link($cat -> term_id);?>">
+        <?php echo $cat->name;?>
+      </a>
+    <?php endforeach;?>
+
+    <?php comments_template();?>
+
+
+  <?php endwhile; else; endif;?>
+```
+- add category to title of archive and category-blog
+- wp_link_pages links sections of the same post separated by PAGE BREAK (alt + shift + p) - <!--nextpage-->
+### archive.php
+```php
+<?php get_header();?>
+<section class="page-wrapper">
+  <div class="container">    
+    <h1><?php echo single_cat_title();?></h1>
+    <?php get_template_part('includes/section', 'archive');?>
+
+    <?php previous_posts_link();?>
+    <?php next_posts_link();?>
+  </div>
+</section>
+<?php get_footer();?>
+```
+
+### category-blog.php
+```php
+<?php get_header();?>
+<section class="page-wrapper">
+  <div class="container">    
+    <h1><?php echo single_cat_title();?></h1> 
+    <?php get_template_part('includes/section', 'archive');?>
+
+    <?php previous_posts_link();?>
+    <?php next_posts_link();?>
+  </div>
+</section>
+<?php get_footer();?>
+```
+
+- add wp_link_pages links sections of the same post separated by PAGE BREAK (alt + shift + p) - <!--nextpage-->
+
+### single.php
+```php
+<?php get_header();?>
+<section class="page-wrap">
+  <div class="container">
+    <h1><?php the_title();?></h1>
+    <?php get_template_part('includes/section', 'blogcontent');?>
+    <?php wp_link_pages();?>
+  </div>
+</section>
+<?php get_footer();?>
+```
+
+## Enable post images
+
+### functions.php
+```php
+<?php
+
+// Load stylesheets
+function load_css() {
+  wp_register_style('bootstrap', get_template_directory_uri() . '/css/bootstrap.min.css', array(), false, 'all');
+  wp_enqueue_style('bootstrap');
+
+  wp_register_style('main', get_template_directory_uri() . '/css/main.css', array(), false, 'all');
+  wp_enqueue_style('main');
+}
+
+add_action('wp_enqueue_scripts', 'load_css');
+
+// Load javascript
+function load_js() {
+  wp_enqueue_script('jquery');
+  wp_register_script('bootstrap', get_template_directory_uri() . '/js/bootstrap.min.js', 'jquery', false, true);
+  wp_enqueue_script('bootstrap');
+}
+
+add_action('wp_enqueue_scripts', 'load_js');
+
+// Theme Options
+add_theme_support('menus');
+add_theme_support('post-thumbnails');
+
+// Menus
+register_nav_menus(
+  array(
+    'top-menu' => 'Top Menu Location',
+    'mobile-menu' => 'Mobile Menu Location',
+    'footer-menu' => 'Footer Menu Location',
+  )
+);
+
+// Custom Image Sizes
+add_image_size('blog-large', 800, 400, true);
+add_image_size('blog-small', 300, 200, true);
+```
+
+### single.php
+```php
+<?php get_header();?>
+<section class="page-wrap">
+  <div class="container">
+    <?php if(has_post_thumbnail()):?>
+      <img src="<?php the_post_thumbnail_url('blog-large');?>" alt="<?php the_title();?>" class="img-fluid mb-3 img-thumbnail">
+    <?php endif;?>
+    <h1><?php the_title();?></h1>
+    <?php get_template_part('includes/section', 'blogcontent');?>
+    <?php wp_link_pages();?>
+  </div>
+</section>
+<?php get_footer();?>
+```
+
+- Plugin - force regenerate thumbnails
+
+### includes/section-archive.php
+```php
+
+  
+<?php if(have_posts()): while(have_posts()):the_post();?>
+  <div class="card mb-3">
+    <div class="card-body d-flex justify-content-center align-items-center">
+      <?php if(has_post_thumbnail()):?>
+        <img src="<?php the_post_thumbnail_url('blog-small');?>" alt="<?php the_title();?>" class="img-fluid mb-3 img-thumbnail mr-4">
+      <?php endif;?>
+
+      <div class="blog-content">
+        <h3><?php the_title();?></h3>
+        <?php the_excerpt();?>
+        <a href="<?php the_permalink();?>" class="btn btn-success">Read more</a>   
+      </div>       
+    </div>
+  </div>
+<?php endwhile; else; endif;?>
+```
+
+### page.php
+```php
+<?php get_header();?>
+<section class="page-wrapper">
+  <div class="container">
+    <h1><?php the_title();?></h1>
+    <?php if(has_post_thumbnail()):?>
+      <img src="<?php the_post_thumbnail_url('blog-large');?>" alt="<?php the_title();?>" class="img-fluid mb-3 img-thumbnail">
+    <?php endif;?>
+    <?php get_template_part('includes/section', 'content');?>
+  </div>
+</section>
+<?php get_footer();?>
+```
